@@ -1,57 +1,57 @@
-import vk_api
+import vk
 #import config
 
+
+def safe_request(method):
+    def wrapper(*args, **kwargs):
+        try:
+            res = method(*args, **kwargs)
+        except:
+            res = None
+        return res
+    return wrapper
+
 class Message:
-	def __init__(self,from_id,from_fname,from_lname,message_text):
-		self.from_id = from_id
-		self.from_fname = from_fname
-		self.from_lname = from_lname
-		self.message_text = message_text
+    def __init__(self,fname,lname,text):
+        self.first_name = fname
+        self.last_name = lname
+        self.massage_text = text
+
+    def get_text(self):
+        string = 'От: ' + self.first_name + ' '
+        string += self.last_name + '\n'
+        string += self.massage_text
+        return string
 
 
-def messages_formatting(messages):
+class User:
+    def __init__(self,login,password):
+        self.login = login
+        self.password = password
+        self.api = None
 
-	format_messages = list()
+    def auth(self):
+        session = vk.AuthSession(
+            app_id='5610770', 
+            user_login=self.login, 
+            user_password=self.password, 
+            scope='messages',
+        )
+        self.api = vk.API(session)
 
-	for key in messages.keys():
-		temp = Message(key, messages[key]['from_fname'], messages[key]['from_lname'], messages[key]['message_text'])	
-		format_messages.append(temp)
-
-	return format_messages
-
-
-def get_unread_messages(session):
-
-	unread_messages = dict()
-	messages = session.messages.get(count = 20)
-
-	for message in messages['items']:
-		if message['read_state'] == 0:
-			#session.messages.markAsRead(message_ids = message['id'])
-			users = session.users.get(user_ids = message['user_id'])
-			for user in users:
-				if user['id'] in unread_messages.keys():
-					unread_messages[user['id']]['message_text'] += '\n\n' + message['body']
-				else:
-					temp = dict()
-					temp['from_fname'] = user['first_name']
-					temp['from_lname'] = user['last_name']
-					temp['message_text'] = message['body']
-					unread_messages[user['id']] = temp
-
-	return messages_formatting(unread_messages)
-
-
-def auth(): 
-    vk_session = vk_api.VkApi('harovod@mail.ru', 'kinoprom12')
-
-    try:
-        vk_session.authorization()
-    except vk_api.AuthorizationError as error_msg:
-        print(error_msg)
-        return
-
-    return vk_session.get_api()
-
-
-
+    @safe_request
+    def get_messages(self):
+        unread_msgs = []
+        print('1')
+        messages = self.api.messages.get(out=0, count=5)
+        for message in messages:
+            print(message)
+            if message['read_state'] == 0:
+                user_info = self.api.users.gets(user_ids=message['user_id'])
+                unread_msgs.append(Message(user_info['first_name'],user_info['last_name'],message['body']).get_text())
+            print('2')       
+        return unread_msgs
+        
+u = User('harovod@mail.ru', 'kinoprom12')
+u.auth()
+u.get_messages()
