@@ -43,15 +43,15 @@ class User:
     def get_messages(self):
         unread_msgs = []
         print('1')
-        messages = self.api.messages.get(out=0, count=5)
+        messages = self.api.messages.get(out=0, count=2)
+        print(messages)
         for message in messages:
-            print(message)
             if message['read_state'] == 0:
                 user_info = self.api.users.gets(user_ids=message['user_id'])
                 unread_msgs.append(Message(user_info['first_name'],user_info['last_name'],message['body']).get_text())
             print('2')       
         return unread_msgs
         
-u = User('harovod@mail.ru', 'kinoprom12')
+u = User(input(),input())
 u.auth()
 u.get_messages()
