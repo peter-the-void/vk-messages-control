@@ -3,7 +3,7 @@ import chat_messages as cm
 from vk_messages_control import Message, User
 bot = telebot.TeleBot('288577480:AAHLCAz53rhF0T14CL80qJLIiPdbupqbvbc')
 
-user = User('harovod@mail.ru','kinoprom12')
+user = User(input(),input())
 user.auth()
 
 @bot.message_handler(commands=['start'])
